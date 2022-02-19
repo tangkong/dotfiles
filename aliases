@@ -1,0 +1,121 @@
+#!/bin/bash
+# vi: syntax=sh
+
+alias ln='ln -v'
+alias mkdir='mkdir -p'
+
+
+if [ -d /Volumes ]; then
+    alias ls='ls -G'
+else
+    alias ls='ls -G --color'
+fi
+
+alias l='ls'
+alias ll='ls -al'
+alias lh='ls -Alh'
+
+alias ..='cd ..'
+
+alias ue='tmux update-env'
+
+# conda environment for vim to use
+#vimenv=$HOME/mc/envs/py36
+
+# Use neovim if available:
+(which nvim 2> /dev/null > /dev/null) && use_nvim=1
+
+if [[ -n "$use_nvim" ]]; then
+    # -X stops from connecting to X server
+    alias nvim="PATH=\"$vimenv/bin:$vimenv/scripts:$PATH\" `which nvim`"
+    alias vi='nvim'
+    alias vim='nvim'
+    alias view='nvim -R'
+    alias vimdiff='nvim -d'
+    alias ivimdiff="nvim -dc 'set diffopt+=iwhite'"
+
+    export EDITOR=nvim
+else
+    alias vim="PATH=\"$vimenv/bin:$vimenv/scripts:$PATH\" `which vim`"
+    alias vi='vim -X'
+    alias vim='vim -X'
+    alias view='vim -XR'
+    alias ivimdiff="vimdiff -c 'set diffopt+=iwhite'"
+    export EDITOR=vim
+fi
+
+alias ssh='ssh -Y'
+alias sudo='sudo ' # this allows for aliases to be passed through to sudo
+
+## startup gdb with python backtrace stuff
+#alias pythongdb='gdb -iex "set auto-load safe-path /usr/bin" python2.7-dbg'
+#alias rc='source ~/conda_ramdisk.sh'
+#alias sac='sdac; conda activate'
+#alias sdac='conda deactivate; conda deactivate'
+#alias pyoutline='grep -Hn --color -e '\''^\s*class '\'' -e '\''^\s*\(async \)\?def '\'''
+#alias cview='view -c ":HighlightCoverage"'
+#function cdup() { cd ../$@; }
+#alias pd=pushd
+#alias ppd=popd
+#alias iocConsole='TERM=screen iocConsole'
+#alias mmf_hgvpu='ssh dev3 /afs/slac.stanford.edu/g/lcls/vol8/epics/iocCommon/ioc-b081-mc01/GUI.sh'
+#alias epicsdev='pushd $HOME/Repos/epics-on-travis && source setup_local_dev_env.sh; popd; source deactivate; source activate py36'
+#alias openfiles="lsof -n |cut -d ' ' -f 1 | sort |uniq -c |sort -n"
+#alias cclip='xclip -selection clipboard'
+
+# Include custom aliases
+[[ -f ~/.aliases.local ]] && source ~/.aliases.local
+
+function wherep() { which python; python -c "import $1; print('$1 is', $1.__file__)"; }
+function github_pr() {
+    echo "PR $1 from origin into branch $2:"
+    git fetch origin pull/$1/head:$2
+}
+
+hash_repo() {
+    REPO=$1
+    VER=$2
+    wget https://github.com/$REPO/archive/v${VER}.tar.gz
+    shasum -a 256 v${VER}.tar.gz
+}
+
+pcds_hash() {
+    REPO=$1
+    VER=$2
+    hash_repo pcdshub/$REPO $VER
+}
+
+slac_hash() {
+    REPO=$1
+    VER=$2
+    hash_repo slaclab/$REPO $VER
+}
+
+caproto_hash() {
+    VER=$1
+    pip download caproto==${VER} --no-binary=:all:
+    shasum -a 256 caproto-${VER}.tar.gz
+}
+
+gp() {
+    REMOTE=${1:-origin}
+    BRANCH=${2:-master}
+    git pull ${REMOTE} ${BRANCH}
+}
+
+dotf() {
+    cd $HOME/dotfiles/$@
+}
+
+ipy() {
+    cmd=$(which $1)
+    shift
+    if [ ! -z "$cmd" ]; then
+        set -x
+        ipython -i --pdb $cmd -- $@
+        set +x
+    fi
+}
+
+# for upgrading HEAD formulas:
+alias gd="git diff"

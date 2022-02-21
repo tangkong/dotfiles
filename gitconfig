@@ -1,0 +1,7 @@
+[user]
+	name = Robert Tang-Kong
+	useConfigOnly = true
+[color]
+	ui = auto
+[alias]
+    loll = log --graph --decorate --pretty=oneline --abbrev-commit
